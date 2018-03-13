@@ -1,10 +1,17 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.List;
 
 public class Chat {
 	private InetSocketAddress serverAddress;
+	private ObjectMapper objectMapper = new ObjectMapper();
+	private BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
 
 	public Chat(InetSocketAddress inetSocketAddress) {
 		serverAddress = inetSocketAddress;
@@ -12,38 +19,45 @@ public class Chat {
 	}
 
 	void runChat() throws IOException {
-		String name = getName();
-		SocketChannel client = SocketChannel.open(serverAddress);
+		//Socket client = new Socket(serverAddress.getAddress().getHostAddress(), serverAddress.getPort());
+		InetSocketAddress hostAddress = new InetSocketAddress("localhost", 10000);
+		SocketChannel client = SocketChannel.open(hostAddress);
+		MessageReceiver messageReceiver = new MessageReceiver(client);
+		Thread t = new Thread(messageReceiver);
+		t.start();
+		try {
+			String name = getName();
+			while (true) {
+				String input = consoleReader.readLine();
+				Message message = new Message(name, input);
+				List<Packet> packets = message.getMessagesList();
 
-		template(client);
-		client.close();
-
-	}
-
-	private void template(SocketChannel client) throws IOException {
-		System.out.println("Client sending messages to server...");
-
-		// Send messages to server
-		String[] messages = new String[]{"Time goes fast.", "What now?", "Bye."};
-
-		for (int i = 0; i < messages.length; i++) {
-
-			byte[] message = new String(messages[i]).getBytes();
-			ByteBuffer buffer = ByteBuffer.wrap(message);
-			client.write(buffer);
-
-			System.out.println(messages[i]);
-			buffer.clear();
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+				packets.forEach(packet -> {
+					try {
+						sendPacket(client, packet);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				});
+//				String s = objectMapper.writeValueAsString(message);
+//				System.out.println(s);
+//				ByteBuffer buffer = ByteBuffer.wrap(s.getBytes());
+//				client.write(buffer);
 			}
+		} finally {
+
+			client.close();
 		}
 	}
 
-	private String getName() {
+	private void sendPacket(SocketChannel client, Packet packet) throws IOException {
+		String dataToSend = objectMapper.writeValueAsString(packet);
+		ByteBuffer buffer = ByteBuffer.wrap(dataToSend.getBytes());
+		client.write(buffer);
+	}
+
+	private String getName() throws IOException {
 		System.out.println("Type your name: ");
-		return System.console().readLine();
+		return consoleReader.readLine();
 	}
 }

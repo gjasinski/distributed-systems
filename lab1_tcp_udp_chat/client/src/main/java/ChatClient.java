@@ -3,8 +3,12 @@ import java.net.InetSocketAddress;
 
 public class ChatClient {
 
-	public static void main(String[] args) throws IOException, InterruptedException {
-		new Chat(getServerAddress(args));
+	public static void main(String[] args) {
+		try {
+			new Chat(getServerAddress(args)).runChat();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static InetSocketAddress getServerAddress(String[] args) {
