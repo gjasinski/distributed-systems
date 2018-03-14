@@ -41,7 +41,7 @@ class ChannelRegister implements Runnable {
 						ChannelUser userChannel = new ChannelUser(client, channelRepository);
 						Thread t = new Thread(userChannel);
 						t.start();
-						channelRepository.addChannel(userChannel);
+						channelRepository.addChannel(userChannel, t);
 					}
 
 				}
