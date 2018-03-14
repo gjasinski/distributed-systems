@@ -1,13 +1,10 @@
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.omg.CORBA.SetOverrideType;
-
-import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 public class ChannelUser implements Runnable {
@@ -29,30 +26,23 @@ public class ChannelUser implements Runnable {
 	@Override
 	public void run() {
 		try {
-			name = readName();
-			System.out.println(name + " joined");
-			channelRepository.sendMessage(name + " joined", name);
-			while (!terminate) {
-				selector.select();
-				Set<SelectionKey> selectionKeys = selector.selectedKeys();
-				Iterator<SelectionKey> iter = selectionKeys.iterator();
-
-				while (iter.hasNext()) {
-					SelectionKey ky = iter.next();
-					if (ky.isReadable()) {
-						SocketChannel client = (SocketChannel) ky.channel();
-						ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-						client.read(buffer);
-						String output = new String(buffer.array()).trim();
-						if (!output.equals("")) {
-							channelRepository.sendMessage(output, name);
-						}
-					}
-				}
-				iter.remove();
-			}
+			receiveNameFromClient();
+			receiveMessagesFromClient();
 		} catch (IOException ex) {
 			System.out.println(ex);
+		}
+	}
+
+	private void receiveMessagesFromClient() throws IOException {
+		while (!terminate) {
+			selector.select();
+			Set<SelectionKey> selectionKeys = selector.selectedKeys();
+			Iterator<SelectionKey> iterator = selectionKeys.iterator();
+			while (iterator.hasNext()) {
+				extractMessage(iterator.next())
+						.ifPresent(message -> channelRepository.sendMessage(message, name));
+			}
+			iterator.remove();
 		}
 	}
 
@@ -61,20 +51,33 @@ public class ChannelUser implements Runnable {
 			selector.select();
 			Set<SelectionKey> selectionKeys = selector.selectedKeys();
 			Iterator<SelectionKey> iter = selectionKeys.iterator();
-			SelectionKey ky = iter.next();
-			if (ky.isReadable()) {
-				SocketChannel client = (SocketChannel) ky.channel();
-				ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-				client.read(buffer);
-				String output = new String(buffer.array()).trim();
-				if (!output.equals("")) {
-					iter.remove();
-					return output;
-				}
+			Optional<String> message = extractMessage(iter.next());
+			if(message.isPresent()){
+				return message.get();
 			}
-			iter.remove();
+//			iter.remove();
 		}
 		return "";
+	}
+
+	private Optional<String> extractMessage(SelectionKey key) throws IOException {
+		String result = null;
+		if (key.isReadable()) {
+			SocketChannel client = (SocketChannel) key.channel();
+			ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+			client.read(buffer);
+			String output = new String(buffer.array()).trim();
+			if (!output.equals("")) {
+				result = output;
+			}
+		}
+		return Optional.ofNullable(result);
+	}
+
+	private void receiveNameFromClient() throws IOException {
+		name = readName();
+		System.out.println(name + " joined");
+		channelRepository.sendMessage(name + " joined", name);
 	}
 
 	void sendMessage(String message, String fromUser) throws IOException {

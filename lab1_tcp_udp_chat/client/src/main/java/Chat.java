@@ -12,13 +12,13 @@ public class Chat {
 	}
 
 	void runChat() throws IOException {
+		String name = getName();
 		InetSocketAddress hostAddress = new InetSocketAddress("localhost", 10000);
 		SocketChannel client = SocketChannel.open(hostAddress);
 		MessageReceiver messageReceiver = new MessageReceiver(client);
 		Thread t = new Thread(messageReceiver);
 		t.start();
 		try {
-			String name = getName();
 			sendString(client, name);
 			while (true) {
 				String input = consoleReader.readLine();
