@@ -1,4 +1,4 @@
-`1`import java.io.IOException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -55,7 +55,6 @@ public class ChannelUser implements Runnable {
 			if(message.isPresent()){
 				return message.get();
 			}
-//			iter.remove();
 		}
 		return "";
 	}
