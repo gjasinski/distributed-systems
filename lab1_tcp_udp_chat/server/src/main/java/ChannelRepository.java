@@ -9,21 +9,15 @@ class ChannelRepository {
         this.channels.add(channelUser);
     }
 
-    synchronized void sendMessage(String message, String fromUser) {
+    synchronized void sendMessage(String message, String fromUser) throws IOException {
         for (int i = 0; i < channels.size(); i++) {
             ChannelUser channel = channels.get(i);
-            try {
-                channel.sendMessage(message, fromUser);
-            } catch (IOException e) {
-                terminate(channel);
-            }
+            channel.sendMessage(message, fromUser);
         }
     }
 
-    private void terminate(ChannelUser channel) {
-        System.out.println(channel.getName() + "start closing");
-        channel.terminate();
-        channels.remove(channel);
-        System.out.println(channel.getName() + " closed connection");
+    synchronized void removeChannelUser(ChannelUser channel){
+        this.channels.remove(channel);
     }
+
 }
