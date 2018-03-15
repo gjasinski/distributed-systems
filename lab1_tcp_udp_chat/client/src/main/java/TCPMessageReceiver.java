@@ -6,9 +6,11 @@ import java.net.Socket;
 public class TCPMessageReceiver implements Runnable {
     private final BufferedReader reader;
     private final InputStreamReader inputStreamReader;
+    private final Socket socket;
     private volatile boolean terminate = false;
 
     TCPMessageReceiver(Socket socket) throws IOException {
+        this.socket = socket;
         inputStreamReader = new InputStreamReader(socket.getInputStream());
         reader = new BufferedReader(inputStreamReader);
     }
@@ -24,16 +26,18 @@ public class TCPMessageReceiver implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            try {
-                inputStreamReader.close();
-                reader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            terminate();
         }
     }
 
     void terminate() {
-        this.terminate = true;
+        terminate = true;
+        try {
+            socket.close();
+            inputStreamReader.close();
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

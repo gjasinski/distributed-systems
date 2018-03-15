@@ -19,7 +19,7 @@ public class UDPMessageReceiver implements Runnable {
                 Arrays.fill(receiveBuffer, (byte) 0);
                 DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
                 socket.receive(receivePacket);
-                String message = new String(receivePacket.getData());
+                String message = new String(receivePacket.getData()).trim();
                 System.out.println(message);
             }
         } catch (IOException e) {
@@ -29,5 +29,6 @@ public class UDPMessageReceiver implements Runnable {
 
     void terminate() {
         this.terminate = true;
+        this.socket.close();
     }
 }

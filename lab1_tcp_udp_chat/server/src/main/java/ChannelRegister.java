@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -13,7 +14,7 @@ class ChannelRegister implements Runnable {
     ChannelRegister(String host, int port) throws IOException {
         serverSocket = new ServerSocket(port);
         channelRepository = new ChannelRepository();
-        channelUDP = new ChannelUDP(host, port);
+        channelUDP = new ChannelUDP(port, channelRepository);
     }
 
 
@@ -25,10 +26,11 @@ class ChannelRegister implements Runnable {
         try {
             while (users < MAX_USERS) {
                 Socket client = serverSocket.accept();
-                System.out.println(client.getInetAddress().toString());
-                ChannelUser userChannel = new ChannelUser(client, channelRepository);
+                SocketAddress remoteSocketAddress = client.getRemoteSocketAddress();
+                ChannelTCP userChannel = new ChannelTCP(client, channelRepository);
                 executorService.execute(userChannel);
-                channelRepository.addChannel(userChannel);
+                channelRepository.addChannelTCP(userChannel);
+                channelUDP.addUDPUser(remoteSocketAddress);
                 users++;
             }
         } catch (Exception ex) {
