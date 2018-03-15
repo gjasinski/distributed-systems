@@ -14,7 +14,7 @@ class ChannelRegister implements Runnable {
     ChannelRegister(String host, int port) throws IOException {
         serverSocket = new ServerSocket(port);
         channelRepository = new ChannelRepository();
-        channelUDP = new ChannelUDP(port, channelRepository);
+        channelUDP = new ChannelUDP(port);
     }
 
 
@@ -35,6 +35,10 @@ class ChannelRegister implements Runnable {
             }
         } catch (Exception ex) {
             System.out.println(ex);
+        }
+        finally {
+            channelUDP.terminate();
+            executorService.shutdownNow();
         }
     }
 }

@@ -9,15 +9,12 @@ import java.util.List;
 
 public class ChannelUDP implements Runnable{
     private final DatagramSocket socket;
-    private final ChannelRepository channelRepository;
     private final List<SocketAddress> socketAddresses = new ArrayList<>();
     private volatile boolean terminate = false;
 
-    ChannelUDP(int port, ChannelRepository channelRepository) throws SocketException {
+    ChannelUDP(int port) throws SocketException {
         socket = new DatagramSocket(port);
-        this.channelRepository = channelRepository;
     }
-
 
     @Override
     public void run() {
@@ -36,7 +33,6 @@ public class ChannelUDP implements Runnable{
         }
     }
 
-
     synchronized void addUDPUser(SocketAddress socketAddress){
         this.socketAddresses.add(socketAddress);
     }
@@ -52,13 +48,6 @@ public class ChannelUDP implements Runnable{
             } catch (IOException e) {
                 System.out.println("Send UDP packet was not successful");
             }
-        }
-    }
-
-
-    void sendUDPMessage(DatagramPacket datagramPacket) throws IOException {
-        if(!terminate) {
-            this.socket.send(datagramPacket);
         }
     }
 

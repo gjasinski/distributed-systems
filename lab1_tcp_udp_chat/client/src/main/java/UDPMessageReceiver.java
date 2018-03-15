@@ -22,8 +22,8 @@ public class UDPMessageReceiver implements Runnable {
                 String message = new String(receivePacket.getData()).trim();
                 System.out.println(message);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 

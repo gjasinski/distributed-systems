@@ -35,7 +35,7 @@ class Chat {
     }
 
     void runChat() throws IOException {
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
         name = getName();
 
         tcpMessageReceiver = new TCPMessageReceiver(socket);
@@ -54,12 +54,13 @@ class Chat {
                     sendUdpMessage();
                     break;
                 case "exit":
-                    terminate = true;
+                    terminate();
                     break;
                 default:
                     writer.println(name + ": " + input);
             }
         }
+        executorService.shutdownNow();
     }
 
     private void sendUdpMessage() throws IOException {

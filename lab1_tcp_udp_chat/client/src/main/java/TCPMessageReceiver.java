@@ -23,10 +23,8 @@ public class TCPMessageReceiver implements Runnable {
                 System.out.println(message);
                 message = reader.readLine();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            terminate();
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 
