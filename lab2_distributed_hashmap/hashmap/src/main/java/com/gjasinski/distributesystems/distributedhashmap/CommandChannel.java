@@ -14,13 +14,15 @@ public class CommandChannel {
 	private static final int PACKET_SIZE = 1024;
 	private final DatagramSocket socket;
 	private final Map map;
+	private final SynchronisationChannel synchronisationChannel;
 
-	public CommandChannel(DatagramSocket socket, Map map) {
+	CommandChannel(DatagramSocket socket, Map map, SynchronisationChannel synchronisationChannel) {
 		this.socket = socket;
 		this.map = map;
+		this.synchronisationChannel = synchronisationChannel;
 	}
 
-	void run() throws IOException {
+	void run() throws Exception {
 		while (true) {
 			byte[] input = new byte[PACKET_SIZE];
 			DatagramPacket datagramPacket = new DatagramPacket(input, PACKET_SIZE);
@@ -36,7 +38,10 @@ public class CommandChannel {
 		}
 	}
 
-	byte[] makeOperation(MapOperation operation) {
+	private byte[] makeOperation(MapOperation operation) throws Exception {
+		if(propagateChanges(operation)){
+			synchronisationChannel.send(operation);
+		}
 		switch (operation.getType()) {
 			case CONTAINS_KEY:
 				return createBooleanResult(map.containsKey(operation.getKey()));
@@ -49,6 +54,11 @@ public class CommandChannel {
 			default:
 				throw new IllegalArgumentException("Not implemented operation type" + operation.getType());
 		}
+	}
+
+	private boolean propagateChanges(MapOperation operation) {
+		return operation.getType().equals(MapOperation.OperationType.PUT) ||
+				operation.getType().equals(MapOperation.OperationType.REMOVE);
 	}
 
 	private byte[] createBooleanResult(boolean result) {

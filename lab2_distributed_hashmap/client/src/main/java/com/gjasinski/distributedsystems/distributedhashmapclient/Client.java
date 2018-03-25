@@ -8,6 +8,7 @@ public class Client {
 
 	public static void main(String[] args) throws Exception {
 		Channel channel = new Channel(new DatagramSocket(), server);
+		channel.join();
 		Map map = new Map(channel);
 		map.put("ala ma kota", "kota ma ale");
 		map.containsKey("witcher");
