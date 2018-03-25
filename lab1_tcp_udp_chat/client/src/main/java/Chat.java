@@ -1,49 +1,137 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
+import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class Chat {
-	private InetSocketAddress serverAddress;
+class Chat {
+    private final InputStreamReader inputStreamReader = new InputStreamReader(System.in);
+    private final BufferedReader consoleReader = new BufferedReader(inputStreamReader);
+    private final String host;
+    private final int port;
+    private TCPMessageReceiver tcpMessageReceiver;
+    private UDPMessageReceiver udpMessageReceiver;
+    private Socket socket;
+    private String name;
+    private PrintWriter writer;
+    private DatagramSocket datagramSocket;
+    private volatile boolean terminate = false;
 
-	public Chat(InetSocketAddress inetSocketAddress) {
-		serverAddress = inetSocketAddress;
+    Chat(String host, int port) throws IOException {
+        this.host = host;
+        this.port = port;
+        initConnections();
+    }
 
-	}
+    private void initConnections() throws IOException {
+        socket = new Socket(host, port);
+        writer = new PrintWriter(socket.getOutputStream(), true);
+        datagramSocket = new DatagramSocket(socket.getLocalSocketAddress());
+    }
 
-	void runChat() throws IOException {
-		String name = getName();
-		SocketChannel client = SocketChannel.open(serverAddress);
+    void runChat() throws IOException {
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        name = getName();
 
-		template(client);
-		client.close();
+        tcpMessageReceiver = new TCPMessageReceiver(socket);
+        udpMessageReceiver = new UDPMessageReceiver(datagramSocket);
+        executorService.execute(tcpMessageReceiver);
+        executorService.execute(udpMessageReceiver);
 
-	}
+        writer.println(name);
+        while (!terminate) {
+            String input = consoleReader.readLine();
+            switch (input) {
+                case "A":
+                    writer.println(getHitmanArt());
+                    break;
+                case "U":
+                    sendUdpMessage();
+                    break;
+                case "exit":
+                    terminate();
+                    break;
+                default:
+                    writer.println(name + ": " + input);
+            }
+        }
+        executorService.shutdownNow();
+    }
 
-	private void template(SocketChannel client) throws IOException {
-		System.out.println("Client sending messages to server...");
+    private void sendUdpMessage() throws IOException {
+        String input = consoleReader.readLine();
+        switch (input) {
+            case "A":
+                String hitmanArt = name + ":\n" + getHitmanArt();
+                datagramSocket.send(new DatagramPacket(hitmanArt.getBytes(), hitmanArt.length(),
+                        new InetSocketAddress(host, port)));
+                break;
+            case "exit":
+                terminate();
+                break;
+            default:
+                input = name + ": " + input;
+                datagramSocket.send(new DatagramPacket(input.getBytes(), input.length(),
+                        new InetSocketAddress(host, port)));
+        }
+    }
 
-		// Send messages to server
-		String[] messages = new String[]{"Time goes fast.", "What now?", "Bye."};
+    private String getName() throws IOException {
+        System.out.println("Type your name: ");
+        return consoleReader.readLine();
+    }
 
-		for (int i = 0; i < messages.length; i++) {
+    private void terminate() {
+        terminate = true;
+        tcpMessageReceiver.terminate();
+        udpMessageReceiver.terminate();
+    }
 
-			byte[] message = new String(messages[i]).getBytes();
-			ByteBuffer buffer = ByteBuffer.wrap(message);
-			client.write(buffer);
-
-			System.out.println(messages[i]);
-			buffer.clear();
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private String getName() {
-		System.out.println("Type your name: ");
-		return System.console().readLine();
-	}
+    private String getHitmanArt() {
+        return "                        .-\"\"\"\"-.\n" +
+                "                       / j      \\\n" +
+                "                      :.d;       ;\n" +
+                "                      $$P        :\n" +
+                "           .m._       $$         :\n" +
+                "          dSMMSSSss.__$$b.    __ :\n" +
+                "         :MMSMMSSSMMMSS$$$b  $$P ;\n" +
+                "         SMMMSMMSMMMSSS$$$$     :b\n" +
+                "        dSMMMSMMMMMMSSMM$$$b.dP SSb.\n" +
+                "       dSMMMMMMMMMMSSMMPT$$=-. /TSSSS.\n" +
+                "      :SMMMSMMMMMMMSMMP  `$b_.'  MMMMSS.\n" +
+                "      SMMMMMSMMMMMMMMM \\  .'\\    :SMMMSSS.\n" +
+                "     dSMSSMMMSMMMMMMMM  \\/\\_/; .'SSMMMMSSSm\n" +
+                "    dSMMMMSMMSMMMMMMMM    :.;'\" :SSMMMMSSMM;\n" +
+                "  .MMSSSSSMSSMMMMMMMM;    :.;   MMSMMMMSMMM;\n" +
+                " dMSSMMSSSSSSSMMMMMMM;    ;.;   MMMMMMMSMMM\n" +
+                ":MMMSSSSMMMSSP^TMMMMM     ;.;   MMMMMMMMMMM\n" +
+                "MMMSMMMMSSSSP   `MMMM     ;.;   :MMMMMMMMM;\n" +
+                "\"TMMMMMMMMMM      TM;    :`.:    MMMMMMMMM;\n" +
+                "   )MMMMMMM;     _/\\\\    :`.:    :MMMMMMMM\n" +
+                "  d$SS$$$MMMb.  |._\\\\\\   :`.:     MMMMMMMM\n" +
+                "  T$$S$$$$$$$$$$m;O\\\\\\\\\"-;`.:_.-  MMMMMMM;\n" +
+                " :$$$$$$$$$$$$$$$b_l./\\\\ ;`.:    mMMSSMMM;\n" +
+                " :$$$$$$$$$$$$$$$$$$$./\\\\;`.:  .$$MSMMMMMM\n" +
+                "  $$$$$$$$$$$$$$$$$$$$. \\\\`.:.$$$$SMSSSMMM;\n" +
+                "  $$$$$$$$$$$$$$$$$$$$$. \\\\.:$$$$$SSMMMMMMM\n" +
+                "  :$$$$$$$$$$$$$$$$$$$$$.//.:$$$$SSSSSSSMM;\n" +
+                "  :$$$$$$$$$$$$$$$$$$$$$$.`.:$$SSSSSSSMMMP\n" +
+                "   $$$$$$$$$;\"^$J \"^$$$$;.`.$$P  `SSSMMMM\n" +
+                "   :$$$$$$$$$       :$$$;.`.P'..   TMMM$$b\n" +
+                "   :$$$$$$$$$;      $$$$;.`/ c^'   d$$$$$S;\n" +
+                "   $$$$$S$$$$;      '^^^:_d$g:___.$$$$$$SSS\n" +
+                "   $$$$SS$$$$;            $$$$$$$$$$$$$$SSS;\n" +
+                "  :$$$SSSS$$$$            : $$$$$$$$$$$$$SSS\n" +
+                "  :$P\"TSSSS$$$            ; $$$$$$$$$$$$$SSS;\n" +
+                "  j    `SSSSS$           :  :$$$$$$$$$$$$$SS$\n" +
+                " :       \"^S^'           :   $$$$$$$$$$$$$S$;\n" +
+                " ;.____.-;\"               \"--^$$$$$$$$$$$$$P\n" +
+                " '-....-\"  hitman              \"\"^^T$$$$P\"\n" +
+                "\n";
+    }
 }
