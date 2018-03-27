@@ -9,15 +9,16 @@ public class Hashmap {
 
 	public static void main(String[] args) throws Exception {
 		System.setProperty("java.net.preferIPv4Stack", "true");
-		SynchronisationChannel synchronisationChannel = new SynchronisationChannel("map_synchronisation");
 		DatagramSocket socket;
 		try {
 			socket = new DatagramSocket(PORT);
 		} catch (Exception ex) {
 			socket = new DatagramSocket();
 		}
-		Map map = new Map();
-		synchronisationChannel.startSynchronization(map);
-		new CommandChannel(socket, map, synchronisationChannel).run();
+		SynchronisationChannel synchronisationChannel = new SynchronisationChannel("map_synchronisation");
+
+		Operation operation = new Operation(new Map(), synchronisationChannel);
+		synchronisationChannel.startSynchronization(operation);
+		new CommandChannel(socket, operation).run();
 	}
 }

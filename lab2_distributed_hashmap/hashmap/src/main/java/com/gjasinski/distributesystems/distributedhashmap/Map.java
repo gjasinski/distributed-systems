@@ -18,17 +18,29 @@ public class Map implements SimpleStringMap {
 
 	@Override
 	public String get(String key) {
-		return map.get(key);
+		String res = map.get(key);
+		if(res == null){
+			res = "";
+		}
+		return res;
 	}
 
 	@Override
 	public String put(String key, String value) {
-		return map.put(key, value);
+		String res = map.put(key, value);
+		if(res == null){
+			res = "";
+		}
+		return res;
 	}
 
 	@Override
 	public String remove(String key) {
-		return map.remove(key);
+		String res = map.remove(key);
+		if(res == null){
+			res = "";
+		}
+		return res;
 	}
 
 	public void getState(OutputStream output) throws Exception {

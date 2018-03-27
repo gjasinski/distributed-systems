@@ -9,58 +9,53 @@ import org.jgroups.protocols.FRAG2;
 import org.jgroups.protocols.MERGE3;
 import org.jgroups.protocols.MFC;
 import org.jgroups.protocols.PING;
-import org.jgroups.protocols.SEQUENCER;
 import org.jgroups.protocols.UDP;
 import org.jgroups.protocols.UFC;
 import org.jgroups.protocols.UNICAST3;
 import org.jgroups.protocols.VERIFY_SUSPECT;
-import org.jgroups.protocols.pbcast.FLUSH;
 import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.protocols.pbcast.STABLE;
-import org.jgroups.stack.ProtocolStack;
+import org.jgroups.stack.Protocol;
+
+import java.net.InetAddress;
 
 import static com.gjasinski.distributesystems.distributedhashmap.MapCommunication.*;
 
 class SynchronisationChannel {
 	private final JChannel channel;
 	private final String channelName;
-	private Map map;
+	private Operation operation;
 
 	SynchronisationChannel(String channelName) throws Exception {
 		this.channelName = channelName;
-		channel = new JChannel(getProtocolStack());
+		channel = new JChannel(getProtocols());
 	}
 
-	private ProtocolStack getProtocolStack() throws Exception {
-		System.setProperty("java.net.preferIPv4Stack","true");
-		ProtocolStack stack = new ProtocolStack()
-				.addProtocol(new UDP())
-				.addProtocol(new PING())
-				.addProtocol(new MERGE3())
-				.addProtocol(new FD_SOCK())
-				.addProtocol(new FD_ALL().setValue("timeout", 12000).setValue("interval", 3000))
-				.addProtocol(new VERIFY_SUSPECT())
-				.addProtocol(new BARRIER())
-				.addProtocol(new NAKACK2())
-				.addProtocol(new UNICAST3())
-				.addProtocol(new STABLE())
-				.addProtocol(new GMS())
-				.addProtocol(new UFC())
-				.addProtocol(new MFC())
-				.addProtocol(new FRAG2())
-				.addProtocol(new SEQUENCER())
-				.addProtocol(new FLUSH());
-		System.out.println(stack);
-		stack.init();
-		return stack;
+	private Protocol[] getProtocols() throws Exception {
+		return new Protocol[]{
+				new UDP().setValue("mcast_group_addr",InetAddress.getByName("230.0.0.1")),
+				new PING(),
+				new MERGE3(),
+				new FD_SOCK(),
+				new FD_ALL(),
+				new VERIFY_SUSPECT(),
+				new BARRIER(),
+				new NAKACK2(),
+				new UNICAST3(),
+				new STABLE(),
+				new GMS(),
+				new UFC(),
+				new MFC(),
+				new FRAG2()};
 	}
 
-	void startSynchronization(Map map) throws Exception {
-		this.map = map;
+	void startSynchronization(Operation operation) throws Exception {
+		this.operation = operation;
 		channel.connect(channelName);
 		channel.getState();
-		channel.setReceiver(new CustomReceiverAdapter(map));
+		channel.setReceiver(new CustomReceiverAdapter(operation, channel.getAddress()));
+		System.out.println(channel.getState());
 
 	}
 
