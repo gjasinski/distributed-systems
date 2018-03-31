@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Map implements SimpleStringMap {
+public class Map implements StringMap {
 	private final ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
 
 	@Override
@@ -19,7 +19,7 @@ public class Map implements SimpleStringMap {
 	@Override
 	public String get(String key) {
 		String res = map.get(key);
-		if(res == null){
+		if (res == null) {
 			res = "";
 		}
 		return res;
@@ -28,7 +28,7 @@ public class Map implements SimpleStringMap {
 	@Override
 	public String put(String key, String value) {
 		String res = map.put(key, value);
-		if(res == null){
+		if (res == null) {
 			res = "";
 		}
 		return res;
@@ -37,27 +37,32 @@ public class Map implements SimpleStringMap {
 	@Override
 	public String remove(String key) {
 		String res = map.remove(key);
-		if(res == null){
+		if (res == null) {
 			res = "";
 		}
 		return res;
 	}
 
+	@Override
 	public void getState(OutputStream output) throws Exception {
 		synchronized (map) {
 			Util.objectToStream(map, new DataOutputStream(output));
 		}
 	}
 
+	@Override
 	public void setState(InputStream input) throws Exception {
 		ConcurrentHashMap<String, String> receivedMap = Util.objectFromStream(new DataInputStream(input));
 		synchronized (this.map) {
 			map.clear();
 			map.putAll(receivedMap);
 		}
-		System.out.println(receivedMap.size() + " data in map:");
-		for (java.util.Map.Entry<String, String> val : receivedMap.entrySet()) {
-			System.out.println(val.getKey() + " " + val.getValue());
-		}
+	}
+
+	@Override
+	public String toString() {
+		return "Map{" +
+				"map=" + map +
+				'}';
 	}
 }

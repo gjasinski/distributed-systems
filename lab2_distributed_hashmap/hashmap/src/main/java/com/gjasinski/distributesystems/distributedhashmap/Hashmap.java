@@ -17,7 +17,8 @@ public class Hashmap {
 		}
 		SynchronisationChannel synchronisationChannel = new SynchronisationChannel("map_synchronisation");
 
-		Operation operation = new Operation(new Map(), synchronisationChannel);
+		StringMap map = new VerboseMap(new Map());
+		Operation operation = new Operation(map, synchronisationChannel);
 		synchronisationChannel.startSynchronization(operation);
 		new CommandChannel(socket, operation).run();
 	}

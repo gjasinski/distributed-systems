@@ -25,8 +25,6 @@ public class CommandChannel {
 			int receivedBytes = datagramPacket.getLength();
 			byte[] trimmedInput = Arrays.copyOfRange(input, 0, receivedBytes);
 			MapOperation mapOperation = MapOperation.parseFrom(trimmedInput);
-			System.out.println(mapOperation);
-			System.out.println(new String(mapOperation.getKey().getBytes(), Charset.forName("UTF-8")));
 			operation.propagateChanges(mapOperation);
 			byte[] result = operation.makeOperation(mapOperation);
 			datagramPacket.setData(result, 0, result.length);

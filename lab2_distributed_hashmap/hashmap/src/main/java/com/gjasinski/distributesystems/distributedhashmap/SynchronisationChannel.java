@@ -9,13 +9,16 @@ import org.jgroups.protocols.FRAG2;
 import org.jgroups.protocols.MERGE3;
 import org.jgroups.protocols.MFC;
 import org.jgroups.protocols.PING;
+import org.jgroups.protocols.SEQUENCER;
 import org.jgroups.protocols.UDP;
 import org.jgroups.protocols.UFC;
 import org.jgroups.protocols.UNICAST3;
 import org.jgroups.protocols.VERIFY_SUSPECT;
+import org.jgroups.protocols.pbcast.FLUSH;
 import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.protocols.pbcast.STABLE;
+import org.jgroups.protocols.pbcast.STATE_TRANSFER;
 import org.jgroups.stack.Protocol;
 
 import java.net.InetAddress;
@@ -38,7 +41,7 @@ class SynchronisationChannel {
 				new PING(),
 				new MERGE3(),
 				new FD_SOCK(),
-				new FD_ALL(),
+				new FD_ALL().setValue("timeout", 12000).setValue("interval", 3000),
 				new VERIFY_SUSPECT(),
 				new BARRIER(),
 				new NAKACK2(),
@@ -47,15 +50,17 @@ class SynchronisationChannel {
 				new GMS(),
 				new UFC(),
 				new MFC(),
-				new FRAG2()};
+				new FRAG2(),
+				new SEQUENCER(),
+				new FLUSH(),
+				new STATE_TRANSFER()};
 	}
 
 	void startSynchronization(Operation operation) throws Exception {
 		this.operation = operation;
 		channel.connect(channelName);
-		channel.getState();
 		channel.setReceiver(new CustomReceiverAdapter(operation, channel.getAddress()));
-		System.out.println(channel.getState());
+		channel.getState(null, 1000);
 
 	}
 

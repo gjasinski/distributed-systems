@@ -21,16 +21,13 @@ public class CustomReceiverAdapter extends ReceiverAdapter {
 	@Override
 	public void viewAccepted(View view) {
 		super.viewAccepted(view);
-		System.out.println("viewAccepted" + view.toString());
 	}
 
 	public void receive(Message msg) {
 		if(!ignoreOperation(msg)) {
 			MapOperation mapOperation = msg.getObject();
-			byte[] result = operation.makeOperation(mapOperation);
-			System.out.println("received msg from "
-					+ msg.getSrc() + ": "
-					+ mapOperation + " result: " + result.length);
+			System.out.println("SYNCHRONIZATION FROM " + msg.getSrc() + ": ");
+			operation.makeOperation(mapOperation);
 		}
 	}
 

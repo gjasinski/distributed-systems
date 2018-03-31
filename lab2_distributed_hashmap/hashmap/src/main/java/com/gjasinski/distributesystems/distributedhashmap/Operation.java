@@ -4,10 +4,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class Operation {
-	private final Map map;
+	private final StringMap map;
 	private final SynchronisationChannel synchronisationChannel;
 
-	public Operation(Map map, SynchronisationChannel synchronisationChannel) {
+	Operation(StringMap map, SynchronisationChannel synchronisationChannel) {
 		this.map = map;
 		this.synchronisationChannel = synchronisationChannel;
 	}
