@@ -15,6 +15,7 @@ public class CommandChannel {
 	CommandChannel(DatagramSocket socket, Operation operation) {
 		this.socket = socket;
 		this.operation = operation;
+		System.out.println("My address is:" + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort());
 	}
 
 	void run() throws Exception {

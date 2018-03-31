@@ -52,7 +52,7 @@ public class Map implements StringMap {
 
 	@Override
 	public void setState(InputStream input) throws Exception {
-		ConcurrentHashMap<String, String> receivedMap = Util.objectFromStream(new DataInputStream(input));
+		ConcurrentHashMap<String, String> receivedMap = (ConcurrentHashMap<String, String>)Util.objectFromStream(new DataInputStream(input));
 		synchronized (this.map) {
 			map.clear();
 			map.putAll(receivedMap);
