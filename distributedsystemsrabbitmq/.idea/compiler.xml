@@ -10,9 +10,8 @@
         <module name="distributedsystemsrabbitmq" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="distributed-systems.rabbitmq" target="1.5" />
-      <module name="distributedsystemsrabbitmq" target="1.5" />
+    <bytecodeTargetLevel target="1.8">
+      <module name="distributedsystemsrabbitmq" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

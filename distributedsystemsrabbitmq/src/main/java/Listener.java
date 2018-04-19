@@ -3,7 +3,7 @@ import com.rabbitmq.client.*;
 
 import java.io.IOException;
 
-public class Listener implements Runnable {
+public class Listener {
     private static final String LOCALHOST = "localhost";
     private final String topic;
     private final String exchangeName;
@@ -24,6 +24,7 @@ public class Listener implements Runnable {
 
             String queueName = channel.queueDeclare().getQueue();
             channel.queueBind(queueName, exchangeName, topic);
+            channel.basicQos(10);
 
             Consumer consumer = new DefaultConsumer(channel) {
                 private final ObjectMapper objectMapper = new ObjectMapper();

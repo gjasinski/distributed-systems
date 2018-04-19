@@ -18,6 +18,7 @@ public class Technician {
 	private final static String TECHNICIAN_TOPIC_PREFIX = "/technician/";
 	private final static String LOCALHOST = "LOCALHOST";
 	private final static String DOCTOR_PREFIX = "/doctor/";
+	public static final String LOGS = "/logs";
 	private final TestType testType1;
 	private final TestType testType2;
 
@@ -44,8 +45,10 @@ public class Technician {
 
 			String queueName1 = channel.queueDeclare( TECHNICIAN_TOPIC_PREFIX + testType1.toString(),false, false, false, null).getQueue();
 			String queueName2 = channel.queueDeclare( TECHNICIAN_TOPIC_PREFIX + testType2.toString(),false, false, false, null).getQueue();
+			String queueName3 = channel.queueDeclare().getQueue();
 			channel.queueBind(queueName1, DEFAULT_EXCHANGE, queueName1);
 			channel.queueBind(queueName2, DEFAULT_EXCHANGE, queueName2);
+			channel.queueBind(queueName3, DEFAULT_EXCHANGE, "/info");
 			channel.basicQos(1, false);
 			Consumer consumer = createConsumer(channel);
 
@@ -53,6 +56,7 @@ public class Technician {
 			System.out.println("Waiting for messages...");
 			channel.basicConsume(queueName1, true, consumer);
 			channel.basicConsume(queueName2, true, consumer);
+			channel.basicConsume(queueName3, true, createInfoConsumer(channel));
 		} catch (Exception ex) {
 
 		}
@@ -70,6 +74,18 @@ public class Technician {
 				System.out.println("Received: " + test);
 				test.setDone(true);
 				producer.sendMessage(DOCTOR_PREFIX + test.getDoctorsName(), objectMapper.writeValueAsString(test));
+				producer.sendMessage(LOGS, objectMapper.writeValueAsString(test));
+			}
+		};
+	}
+
+	private DefaultConsumer createInfoConsumer(final Channel channel) {
+		return new DefaultConsumer(channel) {
+
+			@Override
+			public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+				String message = new String(body, "UTF-8");
+				System.out.println("Received: " + message);
 			}
 		};
 	}
