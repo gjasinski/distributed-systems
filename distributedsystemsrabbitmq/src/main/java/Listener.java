@@ -4,31 +4,27 @@ import com.rabbitmq.client.*;
 import java.io.IOException;
 
 public class Listener implements Runnable {
-    public static final String LOCALHOST = "localhost";
+    private static final String LOCALHOST = "localhost";
     private final String topic;
     private final String exchangeName;
 
-    public Listener(String topic, String exchangeName) {
+    Listener(String topic, String exchangeName) {
         this.topic = topic;
         this.exchangeName = exchangeName;
     }
 
     public void run() {
         try {
-            // connection & channel
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost(LOCALHOST);
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
 
-            // exchange
             channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
 
-            // queue & bind
             String queueName = channel.queueDeclare().getQueue();
             channel.queueBind(queueName, exchangeName, topic);
 
-            // consumer (message handling)
             Consumer consumer = new DefaultConsumer(channel) {
                 private final ObjectMapper objectMapper = new ObjectMapper();
                 @Override
