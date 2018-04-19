@@ -37,7 +37,7 @@ class SynchronisationChannel {
 	}
 
 	private ProtocolStack getProtocols() throws Exception {
-		System.setProperty("java.net.preferIPv4Stack","true");
+	//	System.setProperty("java.net.preferIPv4Stack","true");
 
 		ProtocolStack stack = new ProtocolStack();
 
@@ -61,22 +61,29 @@ class SynchronisationChannel {
 				.addProtocol(new SEQUENCER())
 				.addProtocol(new STATE_TRANSFER())
 				.addProtocol(new FLUSH());
-
 		return stack;
 	}
 
 	void startSynchronization(Operation operation) throws Exception {
-		this.operation = operation;
-		channel.setReceiver(new CustomReceiverAdapter(operation, channel));
-		ProtocolStack protocols = getProtocols();
-		channel.setProtocolStack(protocols);
-		protocols.init();
-		channel.connect(channelName);
-		channel.getState(null, 1000);
+		try {
+			this.operation = operation;
+			channel.setReceiver(new CustomReceiverAdapter(operation, channel));
+			ProtocolStack protocols = getProtocols();
+			channel.setProtocolStack(protocols);
+			protocols.init();
+			channel.connect(channelName);
+			channel.getState(null, 1000);
+		}catch (Exception ex){
+			System.out.println(ex.toString());
+		}
 
 	}
 
 	public void send(MapOperation operation) throws Exception {
-		channel.send(new Message(null, operation));
+		try {
+			channel.send(new Message(null, operation));
+		}catch (Exception ex) {
+			System.out.println(ex.toString());
+		}
 	}
 }
