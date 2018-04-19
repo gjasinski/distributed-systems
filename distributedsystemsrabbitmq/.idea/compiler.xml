@@ -6,10 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="distributed-systems.rabbitmq" />
         <module name="distributedsystemsrabbitmq" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="distributed-systems.rabbitmq" target="1.5" />
       <module name="distributedsystemsrabbitmq" target="1.5" />
     </bytecodeTargetLevel>
   </component>
