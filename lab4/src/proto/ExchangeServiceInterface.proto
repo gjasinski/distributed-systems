@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.gjasinski.ds.proto";
+option java_outer_classname = "ExchangeServiceInterface";
+
+enum Currency {
+    PLN = 0;
+    EUR = 1;
+    USD = 2;
+    GBP = 3;
+}
+
+message ExchangeStatus {
+    Currency currency = 1;
+    double buy = 2;
+    double sell= 3;
+}
+
+message CurrencyCollection {
+    repeated Currency currency = 1;
+}
+
+service ExchangeService {
+    rpc GetExchangeStatusStream(CurrencyCollection) returns (stream ExchangeStatus) {}
+}
