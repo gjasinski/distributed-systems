@@ -22,7 +22,7 @@ public class BankImpl {
             ObjectAdapter adapter = communicator.createObjectAdapterWithEndpoints("Adapter1", "tcp -h localhost -p " + port +":udp -h localhost -p " + port);
 
             // 3. Stworzenie serwanta/serwant�w
-            FactoryImpl factory = new FactoryImpl(adapter, exchangeSysteme);
+            FactoryImpl factory = new FactoryImpl(adapter, exchangeSysteme, communicator, Integer.toString(port));
 
             // 4. Dodanie wpis�w do tablicy ASM
             adapter.add(factory, new Identity("factory", "factory"));

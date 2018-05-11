@@ -6,7 +6,9 @@ import com.gjasinski.ds.proto.ExchangeStatus;
 import io.grpc.stub.StreamObserver;
 
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ExchangeImpl extends ExchangeServiceGrpc.ExchangeServiceImplBase
 {
@@ -25,7 +27,10 @@ public class ExchangeImpl extends ExchangeServiceGrpc.ExchangeServiceImplBase
 	}
 
 	public void notifyObservers(){
-		map.entrySet().forEach(entry -> notifyObserver(entry.getKey(), entry.getValue()));
+		for(Map.Entry<StreamObserver<ExchangeStatus>, CurrencyCollection> o: map.entrySet()){
+			notifyObserver(o.getKey(), o.getValue());
+		}
+		//map.entrySet().forEach(entry -> notifyObserver(entry.getKey(), entry.getValue()));
 	}
 
 	private void notifyObserver(StreamObserver<ExchangeStatus> observer, CurrencyCollection collection){
