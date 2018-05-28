@@ -1,0 +1,18 @@
+Zamówienie pozycji
+
+    Następuje przez: zapisanie nowej linii z tytułem (bez ceny) do pliku orders.txt, który stanowi bazę zamówień oraz wysłanie potwierdzenia do klienta
+    Należy zwrócić uwagę na synchronizację dostępu do pliku (bazy)
+
+Strumieniowanie tekstu
+
+    Klient wysyła tytuł, serwer odpowiada strumieniem linii lub zdań z pliku o tej nazwie
+    Jedna linia(lub zdanie) na sekundę (throttle)
+
+Obsługa błędów
+
+    Należy zastosować odpowiednie strategie obsługi błędów
+
+Schemat
+
+    Należy przygotować schemat w wersji elektronicznej
+    Schemat powinien zawierać zaproponowaną strukturę aktorów wraz ze wskazaniem ich cyklu życia (stały/tymczasowy, strategia obsługi błędów)

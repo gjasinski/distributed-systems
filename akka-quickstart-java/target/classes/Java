@@ -1,0 +1,24 @@
+Akka zadanie
+Obsługujemy księgarnię internetową
+
+Umożliwia ona 3 typy operacji:
+
+    Wyszukiwanie pozycji (zwraca cenę lub informację o braku pozycji)
+    Zamówienie pozycji (zwraca potwierdzenie zamówienia)
+    Strumieniowanie tekstu książki – z prędkością jednej linijki (lub zdania) na sekundę
+
+Założenia:
+
+    Klient posiada aplikację (konsolową) opartą o platformę Akka
+    Serwer to pojedyncza maszyna, z dużą ilością zasobów (ale nie nieskończoną)
+    Chcemy być w stanie obsłużyć jak najwięcej klientów równolegle (na jednym serwerze)
+    Chcemy zminimalizować czasy odpowiedzi systemu
+    Chcemy zminimalizować ilość danych przesyłanych przez sieć (należy unikać przesyłania wszystkich wiadomości jako String)
+
+Wyszukiwanie pozycji:
+
+    Należy przeszukać dwie bazy danych
+    Każda baza danych ma postać pliku tekstowego (jedna linia -> jeden tytuł + cena)
+    Zakładamy, że jedna lub obie bazy mogą być czasowo niedostępne
+    Zakładamy, że wyszukiwanie w bazie może być czasochłonne (należy przeszukiwać obie bazy równolegle)
+    Jeśli jakaś pozycja jest w obu bazach to ma tę samą cenę
